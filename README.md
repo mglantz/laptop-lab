@@ -12,7 +12,7 @@ git clone https://github.com/mglantz/laptop-lab
 ```
 * Put in place local dns configuration
 ```
-cp etc/systemd/system/dns-virbr0.service
+sudo cp -R etc /etc
 sudo systemctl daemon-reload
 sudo virsh net-edit default
 <enter in what's in config/default>
@@ -29,7 +29,7 @@ cd laptop-lab
 vi code/ansible/localdc/setup.yml
 cp -Rp code ~
 ```
-* Update and reboot
+* Update and reboot, and yes you need to reboot with these instructions
 ```
 dnf update -y
 reboot
