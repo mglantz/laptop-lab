@@ -12,6 +12,11 @@ pip install ansible ansible-builder ansible-navigator
 ```
 git clone https://github.com/mglantz/laptop-lab
 ```
+* Edit the dnsmasq and libvirt config to fit your setup, meaning these files:
+```
+etc/systemd/system/dns-virbr0.service
+etc/NetworkManager/dnsmasq.d/libvirt_dnsmasq.conf
+```
 * Put in place local dns configuration
 ```
 sudo cp -R etc /etc
