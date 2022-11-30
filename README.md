@@ -24,6 +24,8 @@ sudo cp tools/* /bin/
 * Put playbooks and directories in place
 ```
 cd laptop-lab
+# Edit RHN credentials
+vi code/ansible/localdc/setup.yml
 cp -Rp code ~
 ```
 * Update and reboot
