@@ -5,7 +5,9 @@ Setup of a Fedora based laptop lab
 * Install prerequsites
 ```
 sudo dnf install virt-manager libguestfs-tools guestfs-tools
+pip install ansible ansible-builder ansible-navigator
 ```
+
 * Clone repo
 ```
 git clone https://github.com/mglantz/laptop-lab
