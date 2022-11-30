@@ -1,0 +1,7 @@
+---
+# defaults file for kvm_provision
+vm_image_name: "/var/lib/libvirt/images/stuff.qcow2"
+vm_name: f34-dev
+vm_vcpus: 2
+vm_ram_mb: 2048
+vm_net: default

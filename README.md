@@ -1,2 +1,2 @@
-# labtop-lab
-Quick and dirty laptop lap based on Fedora lastest
+# laptop-lab
+Setup of a Fedora based laptop lab

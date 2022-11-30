@@ -1,0 +1,65 @@
+#!/bin/bash
+# Provision VM
+
+helpme(){
+	echo "Usage: $0 [hostname.sudo.net] [number-of-cpus] [mb of memory]"
+	exit 0
+}
+
+if [ "$#" -eq 0 ]
+then
+	helpme
+fi
+
+case $1 in
+	*help)
+		helpme
+	;;
+esac
+
+vm_hostname=$1
+vm_cpu=$2
+vm_mem=$3
+
+# Customize
+dc_home="/home/mglantz/code/ansible/localdc"
+vm_template="$dc_home/rhel91-template.qcow2"
+vm_image="$dc_home/vms/${vm_hostname}.qcow2"
+# End of customize
+
+cp $vm_template $vm_image
+
+# Prepare VM-image
+virt-sysprep --hostname $vm_hostname --enable customize -a $vm_image
+
+# Create and startup VM
+cd $dc_home
+ansible-playbook provision.yml -e vm_image_name=$(echo $vm_image|sed 's/.qcow2//g') -e vm_name=$vm_hostname -e vm_vcpus=$vm_cpu -e vm_ram_mb=$vm_mem -e vm_net=default
+
+echo $vm_hostname >$dc_home/tmpinventory
+
+# Wait for system to come up
+while true
+do
+	ssh -o StrictHostKeyChecking=no -q root@$vm_hostname exit
+	if [ "$?" -eq 0 ]
+	then
+		echo "$vm_hostname is up, initiating setup."
+		break
+	else
+		echo "Waiting for $vm_hostname to come up."
+		sleep 1
+	fi
+done
+
+# Register to RHN
+sleep 3
+ansible-playbook -i $dc_home/tmpinventory setup.yml
+
+# Optional hardening
+case $4 in
+	pcidss)
+		ansible-playbook -i $dc_home/tmpinventory pcidss.yml
+	;;
+esac
+

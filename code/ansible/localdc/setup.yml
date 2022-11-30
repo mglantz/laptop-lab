@@ -1,0 +1,10 @@
+- name: Setup new virtual machine
+  hosts: all
+  become: true
+  tasks:
+    - name: Register system to RHN
+      community.general.redhat_subscription:
+        state: present
+        username: 
+        password: 
+        auto_attach: true
