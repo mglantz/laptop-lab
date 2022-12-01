@@ -2,7 +2,7 @@
 # Provision VM
 
 helpme(){
-	echo "Usage: $0 [hostname.sudo.net] [number-of-cpus] [mb of memory]"
+	echo "Usage: $0 [hostname.sudo.net] [number-of-cpus] [mb of memory] [optional config name such as pcidss or apache]"
 	exit 0
 }
 
