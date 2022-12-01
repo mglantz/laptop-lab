@@ -42,7 +42,18 @@ dnf update -y
 reboot
 ```
 
-# Test
+# Howto use
+* Create a normal vm with:
+```
+$ vm test123.sudo.net 2 2048
+```
+* See end of the vm script for support for additional configs
+```
+$ vm pcidss.sudo.net 2 2048 pcidss
+$ vm apache.sudo.net 2 2048 apache
+```
+
+# Example output
 ```
 $ vm test123.sudo.net 2 2048
 [mglantz@fedora localdc]$ vm test123.sudo.net 2 2048
