@@ -55,10 +55,13 @@ done
 # Register to RHN
 ansible-playbook -i $dc_home/tmpinventory setup.yml
 
-# Optional hardening
+# Optional config
 case $4 in
 	pcidss)
 		ansible-playbook -i $dc_home/tmpinventory pcidss.yml
+	;;
+	apache)
+		ansible-playbook -i $dc_home/tmpinventory apache.yml
 	;;
 esac
 

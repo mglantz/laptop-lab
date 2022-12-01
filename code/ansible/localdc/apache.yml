@@ -1,0 +1,29 @@
+- name: Install Apache, a web server
+  hosts: all
+  tasks:
+    - name: Ensure the httpd and firewalld software is installed
+      ansible.builtin.dnf:
+        name:
+          - httpd
+          - firewalld
+        state: present
+    - name: Ensure the httpd service is enabled and started
+      ansible.builtin.service:
+        name: httpd
+        enabled: yes
+        state: started
+    - name: Ensure the firewalld service is enabled and started
+      ansible.builtin.service:
+        name: firewalld
+        enabled: yes
+        state: started
+    - name: Create test page
+      ansible.builtin.template:
+        src: templates/test.html.j2
+        dest: /var/www/html/test.html
+        mode: 0644
+    - name: Permit traffic in default zone for https service
+      ansible.posix.firewalld:
+        service: https
+        permanent: yes
+        state: enabled 
