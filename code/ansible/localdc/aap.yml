@@ -1,0 +1,11 @@
+- name: Ansible Automation Platform setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Add Ansible Automation Platform subscription pool
+      community.general.redhat_subscription:
+        state: present
+        username: user
+        password: pass
+        pool_ids:
+          - abcde1234

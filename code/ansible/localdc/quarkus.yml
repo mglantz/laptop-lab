@@ -1,0 +1,30 @@
+- name: "Build and run a Quarkus demo application accessable via https://hostname/hello"
+  hosts: all
+  tasks:
+    - name: Ensure Maven, Java and firewalld software is installed
+      ansible.builtin.dnf:
+        name:
+          - maven
+          - java-17-openjdk
+          - firewalld
+        state: present
+    - name: Ensure the firewalld service is enabled and started
+      ansible.builtin.service:
+        name: firewalld
+        enabled: no
+        state: stopped
+          
+    - name: Create demo Quarkus application
+      shell: mvn io.quarkus:quarkus-maven-plugin:1.7.0.Final:create -DprojectGroupId=com.example -DprojectArtifactId=quarkus-demo -DclassName="com.example.QuarkusDemoResource" -Dpath="/hello"
+      args:
+        creates: /root/quarkus-demo
+
+    - name: Build Quarkus package
+      shell: cd quarkus-demo; mvn clean package 
+      args:
+        creates: /root/quarkus-demo/target/quarkus-demo-1.0-SNAPSHOT-runner.jar
+
+    - name: Start the quarkus-demo application
+      shell: nohup /usr/bin/java -jar /root/quarkus-demo/target/quarkus-demo-1.0-SNAPSHOT-runner.jar
+      async: 10
+      poll: 0
