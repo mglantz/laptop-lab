@@ -2,7 +2,7 @@
 # Provision VM
 
 helpme(){
-	echo "Usage: $0 [hostname.sudo.net] [number-of-cpus] [mb of memory] [optional config name such as pcidss or apache]"
+	echo "Usage: $0 [hostname.sudo.net] [number-of-cpus] [mb of memory] [Optional: pcidss|apache|quarkus|aap]"
 	exit 0
 }
 
@@ -62,6 +62,13 @@ case $4 in
 	;;
 	apache)
 		ansible-playbook -i $dc_home/tmpinventory apache.yml
+	;;
+	quarkus)
+		ansible-playbook -i $dc_home/tmpinventory quarkus.yml
+	;;
+
+	aap)
+		ansible-playbook -i $dc_home/tmpinventory aap.yml
 	;;
 esac
 
