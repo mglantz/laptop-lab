@@ -24,6 +24,14 @@ sudo systemctl daemon-reload
 sudo virsh net-edit default
 <enter in what's in config/default>
 ```
+* Modify vm tool for your setup
+```
+# Modify under section
+# Customize
+...
+# End of customize
+vi tools/vm
+```
 * Put tools in place
 ```
 cd laptop-lab
