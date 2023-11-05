@@ -23,14 +23,16 @@ vm_mem=$3
 
 # Customize
 dc_home="/home/mglantz/code/ansible/localdc"
-vm_template="$dc_home/rhel91-template.qcow2"
+# For RHEL this is the raw KVM install image downloadable from https://access.redhat.com
+vm_template="$dc_home/rhel92-raw.qcow2"
 vm_image="$dc_home/vms/${vm_hostname}.qcow2"
+vm_ssh_key="/home/youruser/.ssh/id_rsa.pub"
 # End of customize
 
 cp $vm_template $vm_image
 
 # Prepare VM-image
-virt-sysprep --hostname $vm_hostname --enable customize -a $vm_image
+virt-sysprep --hostname $vm_hostname --enable customize -a $vm_image --ssh-inject root:file:$vm_ssh_key
 
 # Create and startup VM
 cd $dc_home
