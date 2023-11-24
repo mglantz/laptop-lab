@@ -2,7 +2,7 @@
 # Provision VM
 
 helpme(){
-	echo "Usage: $0 [hostname.sudo.net] [number-of-cpus] [mb of memory] [Optional: pcidss|apache|quarkus|aap]"
+        echo "Usage: $0 [hostname.sudo.net] [number-of-cpus] [mb of memory] [Optional: rhel|fedora|ubuntu|debian] [Optional: pcidss|apache|quarkus|aap]"
 	exit 0
 }
 
@@ -28,6 +28,28 @@ vm_template="$dc_home/rhel92-raw.qcow2"
 vm_image="$dc_home/vms/${vm_hostname}.qcow2"
 vm_ssh_key="/home/youruser/.ssh/id_rsa.pub"
 # End of customize
+
+case $4 in
+	rhel)
+		vm_template="$dc_home/rhel92-raw.qcow2"
+	;;
+	fedora)
+		vm_template="$dc_home/fedora-raw.qcow2"
+	;;
+	ubuntu)
+		vm_template="$dc_home/ubuntu.qcow2"
+	;;
+	debian)
+		vm_template="$dc_home/debian-raw.qcow2"
+	;;
+        breakable)
+                vm_template="$dc_home/oraclelinux-raw.qcow"
+        ;;
+
+	*)
+		vm_template="$dc_home/rhel92-raw.qcow2"
+	;;
+esac
 
 cp $vm_template $vm_image
 
@@ -55,7 +77,10 @@ do
 done
 
 # Register to RHN
-ansible-playbook -i $dc_home/tmpinventory setup.yml
+if [ "$vm_template" = "$dc_home/rhel92-raw.qcow2" ]
+then
+	ansible-playbook -i $dc_home/tmpinventory setup.yml
+fi
 
 # Optional config
 case $4 in
