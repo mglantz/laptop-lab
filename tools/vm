@@ -2,7 +2,7 @@
 # Provision VM
 
 helpme(){
-        echo "Usage: $0 [hostname.mylab.lan] [number-of-cpus] [mb of memory] [Optional: rhel|fedora|ubuntu|debian|breakable] [Optional: pcidss|apache|quarkus|aap]"
+        echo "Usage: $0 [hostname.mrmeee.net] [number-of-cpus] [mb of memory] [Optional: rhel|fedora|ubuntu|debian|breakable] [Optional: pcidss|apache|quarkus|aap]"
 	exit 0
 }
 
@@ -29,7 +29,7 @@ vm_ssh_key="/home/mj/.ssh/id_rsa.pub"
 # End of customize
 
 case $4 in
-	rhel)
+	rhel9|rhel)
 		vm_template="$dc_home/rhel-9.3-x86_64-kvm.qcow2"
 	;;
 	fedora)
@@ -41,9 +41,12 @@ case $4 in
 	debian)
 		vm_template="$dc_home/debian-raw.qcow2"
 	;;
-        breakable)
-                vm_template="$dc_home/oraclelinux-raw.qcow"
-        ;;
+    breakable)
+        vm_template="$dc_home/oraclelinux-raw.qcow"
+    ;;
+	sles15)
+        vm_template="$dc_home/sles15-raw.qcow2"
+    ;;
 
 	*)
 		vm_template="$dc_home/rhel-9.3-x86_64-kvm.qcow2"

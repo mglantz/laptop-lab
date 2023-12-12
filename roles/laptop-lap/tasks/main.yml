@@ -81,28 +81,30 @@
   become: true
 
 - name: Remove default network
-  shell: virsh net-destroy default
+  ansible.builtin.shell: virsh net-destroy default
   become: true
   ignore_errors: true
 
 - name: Remove default network
-  shell: virsh net-undefine default
+  ansible.builtin.shell: virsh net-undefine default
   become: true
   ignore_errors: true
 
 - name: Create default network
-  shell: virsh net-define --file /tmp/network.xml
+  ansible.builtin.shell: virsh net-define --file /tmp/network.xml
   become: true
 
 - name: Start default network
-  shell: virsh net-start default
+  ansible.builtin.shell: virsh net-start default
   become: true
 
 - name: Copy directory
-  copy:
+  ansible.builtin.copy:
     src: /home/{{ ansible_user_id }}/laptop-lab/code/ansible
     dest: /home/{{ ansible_user_id }}/
+    mode: '0644'
+    directory_mode: '0755'
 
 - name: Fix permissions on vmlinuz
-  shell: chmod o+r /boot/vmlinuz*
+  ansible.builtin.shell: chmod o+r /boot/vmlinuz*
   become: true
