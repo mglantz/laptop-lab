@@ -1,0 +1,108 @@
+---
+# tasks file for laptop-lap
+- name: Install Packages for Fedora
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  when: ansible_distribution == "Fedora"
+  become: true
+  loop:
+    - virt-manager
+    - libguestfs-tools
+    - guestfs-tools
+
+- name: Install Packages for Ubuntu
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: latest
+  when: ansible_distribution == "Ubuntu"
+  become: true
+  loop:
+    - virt-manager
+    - libguestfs-tools
+    - guestfs-tools
+
+- name: Install Packages with pip
+  shell: pip install ansible-builder ansible-navigator --break-system-packages
+  become: true
+
+- name: Install Network Configuration
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  become: true
+  loop:
+    - src: templates/dns-virbr0.service
+      dest: /etc/systemd/system/dns-virbr0.service
+      mode: '0644'
+    - src: templates/libvirt_dnsmasq.conf
+      dest: /etc/NetworkManager/dnsmasq.d/libvirt_dnsmasq.conf
+      mode: '0644'
+    - src: templates/network.xml
+      dest: /tmp/network.xml
+      mode: '0644'
+    - src: templates/sudo
+      dest: /etc/sudoers.d/laptop-lab
+      mode: '0644'
+
+- name: Install Network Configuration
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - src: templates/vm
+      dest: /home/{{ ansible_user_id }}/laptop-lab/tools/vm
+      mode: '0755'
+
+- name: Make user that ~/bin does exist
+  ansible.builtin.file:
+    path: /home/{{ ansible_user_id }}/laptop-lab/tools/bin
+    state: directory
+    mode: '0755'
+
+- name: Create symlink
+  ansible.builtin.file:
+    src: /home/{{ ansible_user_id }}/laptop-lab/tools/vm
+    dest: /home/{{ ansible_user_id }}/bin/vm
+    state: link
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true
+
+- name: Start libvirtd service
+  ansible.builtin.systemd:
+    name: libvirtd
+    state: restarted
+    enabled: true
+  become: true
+
+- name: Remove default network
+  shell: virsh net-destroy default
+  become: true
+  ignore_errors: true
+
+- name: Remove default network
+  shell: virsh net-undefine default
+  become: true
+  ignore_errors: true
+
+- name: Create default network
+  shell: virsh net-define --file /tmp/network.xml
+  become: true
+
+- name: Start default network
+  shell: virsh net-start default
+  become: true
+
+- name: Copy directory
+  copy:
+    src: /home/{{ ansible_user_id }}/laptop-lab/code/ansible
+    dest: /home/{{ ansible_user_id }}/
+
+- name: Fix permissions on vmlinuz
+  shell: chmod o+r /boot/vmlinuz*
+  become: true

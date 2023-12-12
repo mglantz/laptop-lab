@@ -1,0 +1,1 @@
+{{ ansible_user_id }} ALL = NOPASSWD: /usr/bin/ansible-playbook

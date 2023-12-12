@@ -2,7 +2,7 @@
 # Provision VM
 
 helpme(){
-        echo "Usage: $0 [hostname.mylab.lan] [number-of-cpus] [mb of memory] [Optional: rhel|fedora|ubuntu|debian|breakable] [Optional: pcidss|apache|quarkus|aap]"
+        echo "Usage: $0 [hostname.{{ labdomain }}] [number-of-cpus] [mb of memory] [Optional: rhel|fedora|ubuntu|debian|breakable] [Optional: pcidss|apache|quarkus|aap]"
 	exit 0
 }
 
@@ -22,10 +22,10 @@ vm_cpu=$2
 vm_mem=$3
 
 # Customize
-dc_home="/home/mj/ansible/localdc"
+dc_home="/home/{{ ansible_user_id }}/ansible/localdc"
 # For RHEL this is the raw KVM install image downloadable from https://access.redhat.com
 vm_image="$dc_home/vms/${vm_hostname}.qcow2"
-vm_ssh_key="/home/mj/.ssh/id_rsa.pub"
+vm_ssh_key="/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
 # End of customize
 
 case $4 in

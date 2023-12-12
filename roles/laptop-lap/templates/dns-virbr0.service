@@ -5,8 +5,8 @@ After=sys-subsystem-net-devices-virbr0.device
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/resolvectl dns virbr0 192.168.124.1
-ExecStart=/usr/bin/resolvectl domain virbr0 sudo.net
+ExecStart=/usr/bin/resolvectl dns virbr0 {{ labgw }}
+ExecStart=/usr/bin/resolvectl domain virbr0 {{ labdomain }}
 ExecStopPost=/bin/echo "Virbr0 dns stop doing nothing"
 #ExecStopPost=/usr/bin/resolvectl revert virbr0
 RemainAfterExit=yes
