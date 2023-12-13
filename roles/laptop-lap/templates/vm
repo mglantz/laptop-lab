@@ -36,6 +36,11 @@ vm_mem=$3
 vm_ssh_key="/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
 vm_image="$dc_home/vms/${vm_hostname}.qcow2"
 
+if [[ "`virsh list --name | grep ^$vm_hostname |wc -l`" != "0" ]];then
+        echo "VM: $vm_hostname already exist... Won't override"
+        exit 0
+fi
+
 if [[ "$4" == "" ]]; then
 	if [ ! -f $dc_home/distributions/default ]; then
 		echo "No distribution has been selected and default distribution haven't been set."
