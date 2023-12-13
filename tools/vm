@@ -1,8 +1,21 @@
 #!/bin/bash
 # Provision VM
 
+dc_home="/home/mj/ansible/localdc"
+
+for i in `ls $dc_home/distributions/*.dist`; do
+	DISTS="$DISTS`echo $i | xargs basename`|"
+done > /dev/null 2>&1
+
+if [[ "$DISTS" = "" ]]; then
+	echo "No distributions defined, please create distributions based on $dc_home/distributions/distro.dist.template"
+	exit 0
+fi
+
+DISTS=${DISTS::len-1}
+
 helpme(){
-        echo "Usage: $0 [hostname.mrmeee.net] [number-of-cpus] [mb of memory] [Optional: rhel|fedora|ubuntu|debian|breakable] [Optional: pcidss|apache|quarkus|aap]"
+        echo "Usage: $0 [hostname.mrmeee.net] [number-of-cpus] [mb of memory] [Optional: $DISTS] [Optional: pcidss|apache|quarkus|aap]"
 	exit 0
 }
 
@@ -20,38 +33,31 @@ esac
 vm_hostname=$1
 vm_cpu=$2
 vm_mem=$3
-
-# Customize
-dc_home="/home/mj/ansible/localdc"
-# For RHEL this is the raw KVM install image downloadable from https://access.redhat.com
-vm_image="$dc_home/vms/${vm_hostname}.qcow2"
 vm_ssh_key="/home/mj/.ssh/id_rsa.pub"
-# End of customize
+vm_image="$dc_home/vms/${vm_hostname}.qcow2"
 
-case $4 in
-	rhel9|rhel)
-		vm_template="$dc_home/rhel-9.3-x86_64-kvm.qcow2"
-	;;
-	fedora)
-		vm_template="$dc_home/fedora-raw.qcow2"
-	;;
-	ubuntu)
-		vm_template="$dc_home/ubuntu.qcow2"
-	;;
-	debian)
-		vm_template="$dc_home/debian-raw.qcow2"
-	;;
-    breakable)
-        vm_template="$dc_home/oraclelinux-raw.qcow"
-    ;;
-	sles15)
-        vm_template="$dc_home/sles15-raw.qcow2"
-    ;;
+if [[ "$4" == ""]]; then
+	if [ ! -f $dc_home/distributions/default ]; then
+		echo "No distribution has been selected and default distribution haven't been set."
+		echo "Please create a symlink: $dc_home/distributions/default, that points to the default distribution"
+		exit 0
+	fi
 
-	*)
-		vm_template="$dc_home/rhel-9.3-x86_64-kvm.qcow2"
-	;;
-esac
+	source $dc_home/distributions/default
+else
+	if [ ! -f $dc_home/distributions/$4 ]; then
+		echo "Distribution $4 isn't defined."
+		echo "Please choose one of: $DISTS" 
+		exit 0
+	fi
+
+	source $dc_home/distributions/$4
+
+fi
+
+echo "Deploying $DISTNAME"
+vm_template=$DISTFILE
+vm_playbooks=$DISTPLAYBOOKS
 
 cp $vm_template $vm_image
 
@@ -78,11 +84,11 @@ do
 	fi
 done
 
-# Register to RHN
-if [ "$vm_template" = "$dc_home/rhel92-raw.qcow2" ]
-then
-	ansible-playbook -i $dc_home/tmpinventory setup.yml
-fi
+# Run playbooks
+for playbook in $vm_playbooks; do 
+	echo "Running playbook: $dc_home/playbooks/$playbook"
+	ansible-playbook -i $dc_home/tmpinventory $dc_home/playbooks/$playbook
+done
 
 # Optional config
 case $4 in
@@ -95,7 +101,6 @@ case $4 in
 	quarkus)
 		ansible-playbook -i $dc_home/tmpinventory quarkus.yml
 	;;
-
 	aap)
 		ansible-playbook -i $dc_home/tmpinventory aap.yml
 	;;

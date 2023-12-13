@@ -46,28 +46,6 @@
       dest: /etc/sudoers.d/laptop-lab
       mode: '0644'
 
-- name: Install Network Configuration
-  ansible.builtin.template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    mode: "{{ item.mode }}"
-  loop:
-    - src: templates/vm
-      dest: /home/{{ ansible_user_id }}/laptop-lab/tools/vm
-      mode: '0755'
-
-- name: Make user that ~/bin does exist
-  ansible.builtin.file:
-    path: /home/{{ ansible_user_id }}/laptop-lab/tools/bin
-    state: directory
-    mode: '0755'
-
-- name: Create symlink
-  ansible.builtin.file:
-    src: /home/{{ ansible_user_id }}/laptop-lab/tools/vm
-    dest: /home/{{ ansible_user_id }}/bin/vm
-    state: link
-
 - name: Reload systemd
   ansible.builtin.systemd:
     daemon_reload: true
@@ -104,6 +82,37 @@
     dest: /home/{{ ansible_user_id }}/
     mode: '0644'
     directory_mode: '0755'
+
+- name: Make user that tools does exist
+  ansible.builtin.file:
+    path: /home/{{ ansible_user_id }}/ansible/tools
+    state: directory
+    mode: '0755'
+
+- name: Install Configuration and scripts
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - src: templates/vm
+      dest: /home/{{ ansible_user_id }}/ansible/tools/vm
+      mode: '0755'
+    - src: templates/rh-register.yml
+      dest: /home/{{ ansible_user_id }}/ansible/localdc/playbooks/rh-register.yml
+      mode: '0644'
+
+- name: Make user that ~/bin does exist
+  ansible.builtin.file:
+    path: /home/{{ ansible_user_id }}/bin
+    state: directory
+    mode: '0755'
+
+- name: Create symlink
+  ansible.builtin.file:
+    src: /home/{{ ansible_user_id }}/ansible/tools/vm
+    dest: /home/{{ ansible_user_id }}/bin/vm
+    state: link
 
 - name: Fix permissions on vmlinuz
   ansible.builtin.shell: chmod o+r /boot/vmlinuz*

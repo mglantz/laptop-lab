@@ -11,10 +11,13 @@ git clone https://github.com/mglantz/laptop-lab
 * Adjust configuration
 Setup your custom variables in the inventory file
 
-# Edit RHN credentials
+* Run install
 ```
-vi ~/ansible/localdc/setup.yml
+ansible-playbook -i inventory.local lab-setup.yaml -K 
 ```
+
+# Create distributions
+See ~ansible/locald/distributions/distro.dist.template
 
 # Howto use
 * Create a normal vm with:
