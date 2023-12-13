@@ -17,7 +17,7 @@ ansible-playbook -i inventory.local lab-setup.yaml -K
 ```
 
 # Create distributions
-See ~ansible/locald/distributions/distro.dist.template
+See ~ansible/localdc/distributions/distro.dist.template
 
 # Howto use
 * Create a normal vm with:
