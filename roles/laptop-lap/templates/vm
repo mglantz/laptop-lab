@@ -78,7 +78,8 @@ virt-sysprep --hostname $vm_hostname --enable customize -a $vm_image --ssh-injec
 cd $dc_home
 sudo ansible-playbook provision.yml -e vm_image_name=$(echo $vm_image|sed 's/.qcow2//g') -e vm_name=$vm_hostname -e vm_vcpus=$vm_cpu -e vm_ram_mb=$vm_mem -e vm_net=default
 
-echo $vm_hostname >$dc_home/tmpinventory
+mkdir -p $dc_home/inventories
+echo $vm_hostname > $dc_home/inventories/inventory-$vm_hostname
 
 # Wait for system to come up
 while true
@@ -97,22 +98,6 @@ done
 # Run playbooks
 for playbook in $vm_playbooks; do 
 	echo "Running playbook: $dc_home/playbooks/$playbook"
-	ansible-playbook -i $dc_home/tmpinventory $dc_home/playbooks/$playbook
+	ansible-playbook -i $dc_home/inventories/inventory-$vm_hostname $dc_home/playbooks/$playbook
 done
-
-# Optional config
-case $4 in
-	pcidss)
-		ansible-playbook -i $dc_home/tmpinventory pcidss.yml
-	;;
-	apache)
-		ansible-playbook -i $dc_home/tmpinventory apache.yml
-	;;
-	quarkus)
-		ansible-playbook -i $dc_home/tmpinventory quarkus.yml
-	;;
-	aap)
-		ansible-playbook -i $dc_home/tmpinventory aap.yml
-	;;
-esac
 
