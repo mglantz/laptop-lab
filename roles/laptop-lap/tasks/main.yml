@@ -61,6 +61,13 @@
     enabled: true
   become: true
 
+- name: Start and enable virbr0
+  ansible.builtin.systemd:
+    name: dns-virbr0
+    state: restarted
+    enabled: true
+  become: true
+
 - name: Remove default network
   ansible.builtin.shell: virsh net-destroy default
   become: true
