@@ -15,7 +15,9 @@ fi
 DISTS=${DISTS::len-1}
 
 helpme(){
-        echo "Usage: $0 [hostname.{{ labdomain }}] [number-of-cpus] [mb of memory] [Optional: $DISTS]"
+        echo "Create VM Usage: $0 [hostname.{{ labdomain }}] [number-of-cpus] [mb-of-memory] [Optional: $DISTS]"
+	echo
+	echo "Run playbook on existing VM: $0 [hostname.{{ labdomain }}] playbook [playbook-name]"
 	exit 0
 }
 
@@ -36,7 +38,47 @@ vm_mem=$3
 vm_ssh_key="/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
 vm_image="$dc_home/vms/${vm_hostname}.qcow2"
 
-if [[ "`virsh list --name | grep ^$vm_hostname |wc -l`" != "0" ]];then
+
+if [[ "$2" == "playbook" ]]; then
+
+        if [[ "`virsh list --all --name | grep ^$vm_hostname |wc -l`" == "0" ]];then
+                echo "VM: $vm_hostname doesn't exist... exiting"
+                exit 0
+        fi
+
+	if [ ! -f $dc_home/inventories/inventory-$vm_hostname ];then
+
+	        mkdir -p $dc_home/inventories
+       		echo $vm_hostname ansible_user=root > $dc_home/inventories/inventory-$vm_hostname
+	fi
+
+        if [ ! -f $dc_home/playbooks/$3 ];then
+                echo "Playbook: $3 doesn't exist in $dc_home/playbooks/.. existing"
+                exit 0
+        fi
+	
+	echo "Excecuting playbook: $dc_home/playbooks/$3 on $vm_hostname"
+
+	if [[ "`virsh list --state-running --name |grep ^$vm_hostname | wc -l`" == "0" ]]; then
+		echo "VM is not running, starting"
+		virsh start --domain $vm_hostname
+		while true; do
+        		ssh -o StrictHostKeyChecking=no -q root@$vm_hostname exit
+        		if [ "$?" -eq 0 ]; then
+                		echo "$vm_hostname is up."
+                		break
+        		else
+       			        echo "Waiting for $vm_hostname to come up."
+                		sleep 1
+        		fi
+		done
+	fi
+        ansible-playbook -i $dc_home/inventories/inventory-$vm_hostname $dc_home/playbooks/$3
+	exit 0
+fi
+
+
+if [[ "`virsh list --all --name | grep ^$vm_hostname |wc -l`" != "0" ]];then
         echo "VM: $vm_hostname already exist... Won't override"
         exit 0
 fi
@@ -79,7 +121,7 @@ cd $dc_home
 sudo ansible-playbook provision.yml -e vm_image_name=$(echo $vm_image|sed 's/.qcow2//g') -e vm_name=$vm_hostname -e vm_vcpus=$vm_cpu -e vm_ram_mb=$vm_mem -e vm_net=default
 
 mkdir -p $dc_home/inventories
-echo $vm_hostname > $dc_home/inventories/inventory-$vm_hostname
+echo $vm_hostname ansible_user=root > $dc_home/inventories/inventory-$vm_hostname
 
 # Wait for system to come up
 while true
