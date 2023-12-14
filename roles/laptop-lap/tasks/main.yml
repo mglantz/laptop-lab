@@ -45,6 +45,9 @@
     - src: templates/sudo
       dest: /etc/sudoers.d/laptop-lab
       mode: '0644'
+    - src: templates/99-dnsmasq.conf
+      dest: /etc/NetworkManager/conf.d/99-dnsmasq.conf
+      mode: '0644' 
 
 - name: Reload systemd
   ansible.builtin.systemd:
