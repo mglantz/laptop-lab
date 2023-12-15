@@ -1,0 +1,15 @@
+<network>
+  <name>default</name>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <domain name='{{ labdomain }}' localOnly='yes'/>
+  <ip address='{{ labgw }}' netmask='255.255.255.0'>
+    <dhcp>
+	    <range start='{{ labdhcpstart }}' end='{{ labdhcpend }}'/>
+    </dhcp>
+  </ip>
+</network>

@@ -1,54 +1,23 @@
 # laptop-lab
-Setup of a Fedora based laptop lab
+Setup of a Fedora/Ubuntu based laptop lab
 
 # Installation
-* Install prerequsites
-```
-sudo dnf install virt-manager libguestfs-tools guestfs-tools
-pip install ansible ansible-builder ansible-navigator
-```
 
-* Clone repo
+* Clone repo into your homefolder
 ```
+cd ~/
 git clone https://github.com/mglantz/laptop-lab
 ```
-* Edit the dnsmasq and libvirt config to fit your setup, meaning these files:
+* Adjust configuration
+Setup your custom variables in the inventory file
+
+* Run install
 ```
-etc/systemd/system/dns-virbr0.service
-etc/NetworkManager/dnsmasq.d/libvirt_dnsmasq.conf
+ansible-playbook -i inventory.local lab-setup.yaml -K 
 ```
-* Put in place local dns configuration
-```
-sudo cp -R etc /etc
-sudo systemctl daemon-reload
-sudo virsh net-edit default
-<enter in what's in config/default>
-```
-* Modify vm tool for your setup
-```
-# Modify under section
-# Customize
-...
-# End of customize
-vi tools/vm
-```
-* Put tools in place
-```
-cd laptop-lab
-sudo cp tools/ /bin/
-```
-* Put playbooks and directories in place
-```
-cd laptop-lab
-# Edit RHN credentials
-vi code/ansible/localdc/setup.yml
-cp -Rp code ~
-```
-* Update and reboot, and yes you need to reboot with these instructions
-```
-dnf update -y
-reboot
-```
+
+# Create distributions
+See ~ansible/localdc/distributions/distro.dist.template
 
 # Howto use
 * Create a normal vm with:

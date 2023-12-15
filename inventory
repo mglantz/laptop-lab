@@ -1,0 +1,8 @@
+localhost ansible_connection=local
+[all:vars]
+labdomain=mylab.lan
+labgw=192.168.124.1
+labdhcpstart=192.168.124.2
+labdhcpend=192.168.124.250
+rhnusername=""
+rhnpassword=""
