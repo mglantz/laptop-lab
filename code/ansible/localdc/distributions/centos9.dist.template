@@ -1,0 +1,3 @@
+DISTNAME="CentOS 9"
+DISTFILE="CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2"
+DISTPLAYBOOKS=""
