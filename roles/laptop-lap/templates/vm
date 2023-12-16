@@ -113,6 +113,24 @@ case $2 in
 
 		exit 0
 	;;
+
+	"start")
+
+	if [[ "`virsh list --all --name | grep ^$vm_hostname |wc -l`" == "0" ]];then
+        echo "VM: $vm_hostname doesn't exist... exiting"
+        exit 0
+    fi
+
+	if [[ "`virsh list --state-running --name |grep ^$vm_hostname | wc -l`" != "0" ]]; then
+		echo "VM: $vm_hostname is already running"
+		exit 0 
+	fi
+
+	virsh start $vm_hostname
+
+	exit 0
+
+	;;
 esac
 
 
