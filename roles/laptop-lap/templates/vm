@@ -22,9 +22,9 @@ DISTS=${DISTS::len-1}
 helpme(){
     echo "Create VM Usage: $0 [hostname.{{ labdomain }}] [number-of-cpus] [mb-of-memory] [Optional: $DISTS]"
 	echo
-	echo "Run playbook on existing VM: $0 [hostname.{{ labdomain }}] playbook [playbook-name]"
-	echo "List VMs: $0 list"
-	echo "Remove VM: $0 [hostname.{{ labdomain }}] remove"
+	echo "Run playbook on existing VM: $0 [hostname.{{ labdomain }}] [playbook|pb] [playbook-name]"
+	echo "List VMs: $0 [list|ls]"
+	echo "Remove VM: $0 [hostname.{{ labdomain }}] [remove|rm]"
 	exit 0
 }
 
@@ -46,7 +46,7 @@ vm_ssh_key="/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
 vm_image="$dc_home/vms/${vm_hostname}.qcow2"
 
 case $1 in
-	"list")
+	"list"|"ls")
 	echo -e "${GREEN}Running VMs${ENDCOLOR}"
 	virsh list --name
 	echo -e "${RED}Stopped VMs${ENDCOLOR}"
@@ -56,7 +56,7 @@ case $1 in
 esac
 
 case $2 in
-	"playbook")
+	"playbook"|"pb")
 
         if [[ "`virsh list --all --name | grep ^$vm_hostname |wc -l`" == "0" ]];then
                 echo "VM: $vm_hostname doesn't exist... exiting"
@@ -93,7 +93,7 @@ case $2 in
         ansible-playbook -i $dc_home/inventories/inventory-$vm_hostname $dc_home/playbooks/$3
 	exit 0
 	;;
-	"remove")
+	"remove"|"rm")
 
 	if [[ "`virsh list --all --name | grep ^$vm_hostname |wc -l`" == "0" ]];then
                 echo "VM: $vm_hostname doesn't exist... exiting"
