@@ -20,11 +20,11 @@ fi
 DISTS=${DISTS::len-1}
 
 helpme(){
-    echo "Create VM Usage: $0 [hostname.{{ labdomain }}] [number-of-cpus] [mb-of-memory] [Optional: $DISTS]"
+    echo "Create VM Usage: $0 [hostname.{{ labdomain }}|hostname] [number-of-cpus] [mb-of-memory] [Optional: $DISTS]"
 	echo
-	echo "Run playbook on existing VM: $0 [hostname.{{ labdomain }}] [playbook|pb] [playbook-name]"
+	echo "Run playbook on existing VM: $0 [hostname.{{ labdomain }}|hostname] [playbook|pb] [playbook-name]"
 	echo "List VMs: $0 [list|ls]"
-	echo "Remove VM: $0 [hostname.{{ labdomain }}] [remove|rm]"
+	echo "Remove VM: $0 [hostname.{{ labdomain }}|hostname] [remove|rm]"
 	exit 0
 }
 
@@ -39,7 +39,12 @@ case $1 in
 	;;
 esac
 
-vm_hostname=$1
+if [[ "`echo $1 |grep {{ labdomain }} | wc -l`" == "0" ]];then
+	vm_hostname=$1.{{ labdomain }}
+else
+	vm_hostname=$1
+fi
+
 vm_cpu=$2
 vm_mem=$3
 vm_ssh_key="/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
