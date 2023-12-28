@@ -6,6 +6,9 @@ GREEN="\e[32m"
 ENDCOLOR="\e[0m"
 dc_home="/home/{{ ansible_user_id }}/ansible/localdc"
 
+# Make sure that vm-network is started
+virsh net-start default > /dev/null 2&>1
+
 for DIST in `ls $dc_home/distributions/*.dist`; do
 	DISTS="$DISTS`echo ${DIST::len-5} |xargs basename`|"
 done > /dev/null 2>&1
