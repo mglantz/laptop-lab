@@ -6,8 +6,11 @@ GREEN="\e[32m"
 ENDCOLOR="\e[0m"
 dc_home="/home/{{ ansible_user_id }}/ansible/localdc"
 
-# Make sure that vm-network is started
-virsh net-start default > /dev/null 2&>1
+DEFAULT_NET_STATUS=$(virsh net-info default |grep Active | cut -f2 -d: |tr -d ' ')
+
+if [[ "$DEFAULT_NET_STATUS" == "no" ]]; then
+	virsh net-start default
+fi
 
 for DIST in `ls $dc_home/distributions/*.dist`; do
 	DISTS="$DISTS`echo ${DIST::len-5} |xargs basename`|"
