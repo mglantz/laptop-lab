@@ -78,7 +78,12 @@ case $2 in
        		echo "$vm_hostname ansible_user=root ansible_ssh_common_args=\"-o StrictHostKeyChecking=no\"" > $dc_home/inventories/inventory-$vm_hostname
 		fi
 
-		if [ -f $3 ]; then
+                if [[ "$3" == "" ]]; then
+                    echo "Playbook not specified, please specify or select from:"
+                    ls $dc_home/playbooks
+                    exit 0
+
+                elif [ -f $3 ]; then
 			playbook=$3
 		else
 			if [ ! -f $dc_home/playbooks/$3 ];then
@@ -229,6 +234,6 @@ done
 # Run playbooks
 for playbook in $vm_playbooks; do 
 	echo "Running playbook: $dc_home/playbooks/$playbook"
-	ansible-playbook -i $dc_home/inventories/inventory-$vm_hostname $dc_home/playbooks/$playbook
+	ansible-playbook -e vm_name=$vm_hostname -i $dc_home/inventories/inventory-$vm_hostname $dc_home/playbooks/$playbook
 done
 
