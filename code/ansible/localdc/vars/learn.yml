@@ -1,0 +1,6 @@
+learn_subnet: 192.168.100
+learn_local_ip4: "{{ learn_subnet }}.1"
+learn_bridge_name: "learn_lan"
+learn_phys_interface: "enx3c18a05898e1"
+learn_fw_ip4: "{{ learn_subnet }}.2"
+learn_dc_ip4: "{{ learn_subnet }}.3"

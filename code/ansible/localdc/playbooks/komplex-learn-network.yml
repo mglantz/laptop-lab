@@ -1,0 +1,39 @@
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include variables
+      ansible.builtin.include_vars:
+        file: ../vars/learn.yml
+
+    - name: Remove local bridge
+      community.general.nmcli:
+        type: bridge
+        conn_name: "{{ learn_bridge_name }}"
+        state: absent
+      delegate_to: localhost
+
+    - name: Configure local bridge
+      community.general.nmcli:
+        type: bridge
+        conn_name: "{{ learn_bridge_name }}"
+        method4: "manual"
+        ip4: "{{ learn_local_ip4 }}/24"
+        method6: disabled
+        state: present
+      delegate_to: localhost
+
+    - name: Add interface to bridge
+      community.general.nmcli:
+        type: bridge-slave
+        conn_name: "{{ learn_bridge_name }}"
+        ifname: '{{ learn_phys_interface }}'
+        master: '{{ learn_bridge_name }}'
+        state: present
+      delegate_to: localhost
+
+    - name: Accept connection from FORWARD
+      ansible.builtin.iptables:
+        chain: FORWARD
+        in_interface: "{{ learn_phys_interface }}"
+        jump: ACCEPT
+      delegate_to: localhost

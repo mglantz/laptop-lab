@@ -1,0 +1,3 @@
+DISTNAME="Oracle Enterprise Linux 9.2"
+DISTFILE="OL9U2_x86_64-kvm-b197.qcow"
+DISTPLAYBOOKS=""

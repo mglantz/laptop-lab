@@ -1,0 +1,71 @@
+---
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: Enable a RHSM repository
+      community.general.rhsm_repository:
+        name: codeready-builder-for-rhel-9-x86_64-rpms
+
+    - name: Install RPM Package
+      ansible.builtin.dnf:
+        name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+        state: present
+        disable_gpg_check: true
+
+    
+    - name: Download GPG file
+      ansible.builtin.get_url:
+        url: https://samba.tranquil.it/RPM-GPG-KEY-TISSAMBA-9
+        dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-TISSAMBA-9
+
+    - name: Import GPG into RPM
+      shell: rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-TISSAMBA-9
+    
+    - name: TISSAMBA Repo
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/tissamba.repo
+        content: |
+          [tis-samba]
+          name=tis-samba
+          baseurl=https://samba.tranquil.it/redhat9/samba-4.19/
+          gpgcheck=1
+          gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-TISSAMBA-8
+
+    - name: Install dnf packages
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - samba
+        - samba-dc
+        - samba-winbind
+        - samba-winbind-clients
+        - krb5-workstation
+        - ldb-tools
+        - bind
+        - chrony
+        - bind-utils
+        - samba-client
+        - python3-markdown
+
+    - name: Initialize Samba DC
+      shell: samba-tool domain provision --realm=KOMPLEXLEARNING.NET --domain KOMPLEXLEARNING --server-role=dc
+
+    - name: Start services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: restarted
+        enabled: true
+        daemon_reload: true
+      loop:
+        - samba
+
+    - name: Configure Samba
+      shell: "{{ item }}"
+      with_items:
+        - samba-tool user setpassword administrator --newpassword "Finicky-item-uprising1!"
+        - samba-tool domain passwordsettings pso create "pso_domain_admins" 42 --min-pwd-length=10
+        - samba-tool domain passwordsettings pso apply "pso_domain_admins"  "domain admins"
+        - samba-tool domain passwordsettings pso create "pso_domain_users" 42 --min-pwd-length=4 --complexity=off --history-length=0
+        - samba-tool domain passwordsettings pso apply "pso_domain_users"  "domain users"
+        - (echo "learn";echo "learn") |smbpasswd -a learn

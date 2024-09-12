@@ -1,0 +1,123 @@
+---
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: Include variables
+      ansible.builtin.include_vars:
+        file: ../vars/learn.yml
+
+    - name: Add bridge interface to {{ learn_bridge_name }}
+      shell: virsh attach-interface --type bridge --source "{{ learn_bridge_name }}" --model virtio {{ ansible_fqdn }} --persistent
+      delegate_to: localhost
+
+    - name: Configure network interface with static ip
+      community.general.nmcli:
+        type: ethernet
+        conn_name: "eth1"
+        ip4: "{{ learn_fw_ip4 }}/24"
+        method6: disabled
+        state: present
+    
+    - name: Install dnf packages
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - dhcp-server
+        - nftables
+
+    - name: Configure dhcpd
+      ansible.builtin.copy:
+        dest: /etc/dhcp/dhcpd.conf
+        content: |
+          option domain-name "komplexlearning.net";
+          option domain-name-servers {{ learn_dc_ip4 }};
+          default-lease-time 600;
+          max-lease-time 7200;
+          ddns-update-style none;
+          log-facility local7;
+          subnet {{ learn_subnet }}.0 netmask 255.255.255.0 {
+            range {{ learn_subnet }}.100 {{ learn_subnet }}.200;
+            option domain-name-servers {{ learn_dc_ip4 }};
+            option domain-name "komplexlearning.net";
+            option routers {{ learn_fw_ip4 }};
+            default-lease-time 600;
+            max-lease-time 7200;
+          }
+        
+    - name: Enable ip_forward
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/98-ip_forward.conf
+        content: |
+          net.ipv4.ip_forward=1
+    
+    - name: Configure NFTables
+      ansible.builtin.copy:
+        dest: /etc/nftables/nat.nft
+        content: |
+          # Sample configuration snippet for nftables service.
+          # Meant to be included by main.nft, not for direct use.
+
+          # dedicated table for IPv4
+          table ip nftables_svc {
+
+                  # interfaces to masquerade traffic from
+                  set masq_interfaces {
+                          type ifname
+                          elements = { "eth0" }
+                  }
+
+                  # networks to masquerade traffic from
+                  # 'interval' flag is required to support subnets
+                  set masq_ips {
+                          type ipv4_addr
+                          flags interval
+                          elements = { {{ learn_subnet }}.0/24 }
+                  }
+
+                  # force port randomization for non-locally originated connections using
+                  # suspicious port values to prevent port-shadow attacks, i.e.
+                  # accidental matching of new inbound connections vs. existing ones
+                  chain do_masquerade {
+                          meta iif > 0 th sport < 16384 th dport >= 32768 masquerade random
+                          masquerade
+                  }
+
+                  # base-chain to manipulate conntrack in postrouting,
+                  # will see packets for new or related traffic only
+                  chain POSTROUTING {
+                          type nat hook postrouting priority srcnat + 20
+                          policy accept
+
+                          iifname @masq_interfaces oifname != @masq_interfaces jump do_masquerade
+                          ip saddr @masq_ips jump do_masquerade
+                  }
+          }
+
+    - name: Configure NFTables
+      ansible.builtin.copy:
+        dest: /etc/sysconfig/nftables.conf
+        content: |
+          # Uncomment the include statement here to load the default config sample
+          # in /etc/nftables for nftables service.
+
+          include "/etc/nftables/nat.nft"
+
+          # To customize, either edit the samples in /etc/nftables, append further
+          # commands to the end of this file or overwrite it after first service
+          # start by calling: 'nft list ruleset >/etc/sysconfig/nftables.conf'.
+
+    - name: Start services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: restarted
+        enabled: true
+        daemon_reload: true
+      loop:
+        - nftables
+        - dhcpd
+      ignore_errors: true
+
+    - name: Reboot
+      ansible.builtin.reboot:
+    
